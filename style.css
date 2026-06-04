@@ -849,3 +849,42 @@ body.pagina-contrato .destaque-alerta strong {
         font-size: 1.5rem;
     }
 }
+
+/* ==========================================
+   BOTÃO DE RESERVA (RODAPÉ DO CONTRATO)
+   ========================================== */
+body.pagina-contrato .contrato-footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px dashed #ddd;
+}
+
+body.pagina-contrato .btn-reserva {
+    display: inline-block;
+    background-color: var(--cor-roxo-medio);
+    color: var(--cor-branco);
+    text-decoration: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 6px 15px rgba(177, 137, 217, 0.4);
+}
+
+body.pagina-contrato .btn-reserva:hover {
+    background-color: var(--cor-lilas-claro);
+    transform: translateY(-3px);
+}
+
+/* Ajuste do botão para celular */
+@media (max-width: 600px) {
+    body.pagina-contrato .btn-reserva {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+    }
+}
