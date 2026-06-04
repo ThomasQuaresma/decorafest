@@ -1,8 +1,16 @@
 {
   "name": "Gestão de Reservas",
   "short_name": "Reservas",
-  "start_url": "./gerenciamento.html",
+  "start_url": "gerenciamento.html",
   "display": "standalone",
   "background_color": "#F2F2F2",
-  "theme_color": "#B189D9"
+  "theme_color": "#B189D9",
+  "icons": [
+    {
+      "src": "icone.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
