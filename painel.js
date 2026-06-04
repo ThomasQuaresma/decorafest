@@ -74,7 +74,7 @@ async function carregarDados() {
             if (zapLimpo.length === 10 || zapLimpo.length === 11) {
                 zapLimpo = '55' + zapLimpo;
             }
-            const msgPronta = encodeURIComponent(`Olá ${primeiroNome}, tudo bem? Aqui é da Profix (Decorações). Sobre a sua reserva do tema ${tema}...`);
+            const msgPronta = encodeURIComponent(`Olá ${primeiroNome}, tudo bem? Sobre a sua reserva do tema ${tema}...`);
             let linkZap = zapLimpo ? `https://wa.me/${zapLimpo}?text=${msgPronta}` : '#';
             let estiloBotaoZap = zapLimpo ? 'background-color: #25D366; color: white;' : 'background-color: #ccc; color: #666; pointer-events: none;';
 
