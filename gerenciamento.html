@@ -27,11 +27,30 @@
         </div>
 
         <div id="painel-principal">
-            
+            <!--BOTÕES-->
+            <div class="view-toggle">
+                <button id="btn-view-lista" class="active" onclick="mudarVisao('lista')">📋 Ver Lista</button>
+                <button id="btn-view-calendario" onclick="mudarVisao('calendario')">📅 Ver Calendário</button>
+            </div>
+
             <div class="container-filtros">
                 <input type="text" id="filtro-nome" placeholder="🔍 Nome, Tema ou Data (ex: 04/06)" onkeyup="filtrarCartoes()">
                 <input type="date" id="filtro-data" onchange="filtrarCartoes()">
                 <button onclick="sairPainel()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;" title="Sair do Sistema">🚪</button>
+            </div>
+
+            <div id="tela-calendario" style="display: none;">
+                <div class="calendario-header">
+                    <button onclick="mudarMes(-1)">◀</button>
+                    <h3 id="mes-ano-display">Carregando...</h3>
+                    <button onclick="mudarMes(1)">▶</button>
+                </div>
+                <div class="calendario-dias-semana">
+                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                </div>
+                <div id="calendario-grid" class="calendario-grid">
+                    <!--JavaScript-->
+                </div>
             </div>
 
             <div id="painel-container">

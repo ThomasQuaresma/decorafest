@@ -1,5 +1,11 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzLdoNpdkAZy6I_2Ai_u5zOLPAISAW14yuGp2JFLrdnCLt9AQR7dLCOPQ0NINKh31QJ/exec';
 
+// ==========================================
+// VARIÁVEIS GLOBAIS (Memória do Sistema)
+// ==========================================
+let dadosGlobais = []; // Guarda as festas para o calendário ler
+let dataAtualCalendario = new Date(); // Guarda o mês que o calendário está mostrando
+
 function extrairNumero(valor) {
     if (valor === undefined || valor === null || valor === '') return 0;
     if (typeof valor === 'number') return valor;
@@ -11,18 +17,20 @@ async function carregarDados() {
         const response = await fetch(API_URL);
         const dados = await response.json();
         
+        // Salva na memória global para usar no calendário
+        dadosGlobais = dados.reverse(); 
+        
         const container = document.getElementById('painel-container');
         
-        if (dados.length === 0) {
+        if (dadosGlobais.length === 0) {
             container.innerHTML = '<div class="status-msg">Nenhuma reserva encontrada.</div>';
             return;
         }
 
-        // Criamos duas variáveis para separar os cartões antes de mostrar na tela
         let htmlAtivos = '';
         let htmlConcluidos = '';
 
-        dados.reverse().forEach((item) => {
+        dadosGlobais.forEach((item) => {
             const id = item['Submission ID']; 
             if(!id) return; 
 
@@ -74,7 +82,7 @@ async function carregarDados() {
             if (zapLimpo.length === 10 || zapLimpo.length === 11) {
                 zapLimpo = '55' + zapLimpo;
             }
-            const msgPronta = encodeURIComponent(`Olá ${primeiroNome}, tudo bem? Sobre a sua reserva do tema ${tema}...`);
+            const msgPronta = encodeURIComponent(`Olá ${primeiroNome}, tudo bem? Aqui é da Profix (Decorações). Sobre a sua reserva do tema ${tema}...`);
             let linkZap = zapLimpo ? `https://wa.me/${zapLimpo}?text=${msgPronta}` : '#';
             let estiloBotaoZap = zapLimpo ? 'background-color: #25D366; color: white;' : 'background-color: #ccc; color: #666; pointer-events: none;';
 
@@ -126,19 +134,15 @@ async function carregarDados() {
                 </div>
             `;
             
-            // SEPARAÇÃO INTELIGENTE
-            if (status === 'Concluido') {
-                htmlConcluidos += cardHTML; // Guarda na caixa dos finalizados
-            } else {
-                htmlAtivos += cardHTML; // Guarda na caixa das prioridades
-            }
+            if (status === 'Concluido') { htmlConcluidos += cardHTML; } 
+            else { htmlAtivos += cardHTML; }
         });
 
-        // Junta tudo e joga na tela (Ativos no topo, Concluídos no final)
         container.innerHTML = htmlAtivos + htmlConcluidos;
-
-        // Reaplica o filtro caso a pessoa já tenha algo digitado na busca
+        
+        // Atualiza a lista e o calendário ao mesmo tempo
         filtrarCartoes();
+        renderizarCalendario();
 
     } catch (error) {
         document.getElementById('painel-container').innerHTML = '<div class="status-msg">Erro ao carregar os dados. Verifique a internet.</div>';
@@ -147,17 +151,107 @@ async function carregarDados() {
 }
 
 // ==========================================
-// MOTOR DE FILTRO E BUSCA
+// MOTOR DO CALENDÁRIO VISUAL
+// ==========================================
+function renderizarCalendario() {
+    const ano = dataAtualCalendario.getFullYear();
+    const mes = dataAtualCalendario.getMonth(); // Vai de 0 (Jan) a 11 (Dez)
+
+    const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    document.getElementById('mes-ano-display').innerText = `${nomesMeses[mes]} ${ano}`;
+
+    // Descobre em que dia da semana cai o dia 1º (0=Dom, 1=Seg...)
+    const primeiroDia = new Date(ano, mes, 1).getDay(); 
+    // Descobre o último dia do mês (30, 31, 28...)
+    const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate(); 
+
+    const grid = document.getElementById('calendario-grid');
+    grid.innerHTML = '';
+
+    // 1. Gera os espaços vazios do começo do mês
+    for (let i = 0; i < primeiroDia; i++) {
+        grid.innerHTML += `<div class="dia-vazio"></div>`;
+    }
+
+    // 2. Gera os quadradinhos dos dias
+    for (let dia = 1; dia <= ultimoDiaDoMes; dia++) {
+        
+        let temFestaNesseDia = false;
+        // Formata o dia para ficar igual ao do filtro (ex: 2026-06-04)
+        const dataFormatadaBusca = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
+        // 3. Procura na memória global se existe alguma festa para este dia exato
+        dadosGlobais.forEach(item => {
+            if (item['Data da Retirada']) {
+                const d = new Date(item['Data da Retirada']);
+                if (!isNaN(d.getTime())) {
+                    // Usamos UTC para bater exatamente com a data extraída do Google
+                    if (d.getUTCFullYear() === ano && d.getUTCMonth() === mes && d.getUTCDate() === dia) {
+                        // Se o status NÃO for concluído, bota a bolinha
+                        if (item['Status'] !== 'Concluido') {
+                            temFestaNesseDia = true;
+                        }
+                    }
+                }
+            }
+        });
+
+        // Se encontrou festa, desenha a bolinha
+        const htmlBolinha = temFestaNesseDia ? `<div class="bolinhas-container"><div class="bolinha-evento"></div></div>` : '';
+
+        // O quadradinho do dia (se clicar, ele chama a função para ver os cartões)
+        grid.innerHTML += `
+            <div class="dia-calendario" onclick="clicouNoCalendario('${dataFormatadaBusca}')">
+                ${dia}
+                ${htmlBolinha}
+            </div>
+        `;
+    }
+}
+
+function mudarMes(direcao) {
+    // Muda para o mês anterior (-1) ou próximo (+1)
+    dataAtualCalendario.setMonth(dataAtualCalendario.getMonth() + direcao);
+    renderizarCalendario();
+}
+
+function clicouNoCalendario(dataISO) {
+    // 1. Joga a data selecionada dentro da barra de busca de data
+    document.getElementById('filtro-data').value = dataISO;
+    // 2. Volta para a visualização da Lista
+    mudarVisao('lista');
+    // 3. Roda o filtro para esconder os outros cartões
+    filtrarCartoes();
+}
+
+function mudarVisao(visao) {
+    document.getElementById('btn-view-lista').classList.remove('active');
+    document.getElementById('btn-view-calendario').classList.remove('active');
+    
+    if (visao === 'lista') {
+        document.getElementById('btn-view-lista').classList.add('active');
+        document.getElementById('tela-calendario').style.display = 'none';
+        document.getElementById('painel-container').style.display = 'block';
+    } else {
+        document.getElementById('btn-view-calendario').classList.add('active');
+        document.getElementById('tela-calendario').style.display = 'block';
+        document.getElementById('painel-container').style.display = 'none';
+        
+        // Limpa os filtros ao voltar pro calendário
+        document.getElementById('filtro-nome').value = '';
+        document.getElementById('filtro-data').value = '';
+        filtrarCartoes(); 
+    }
+}
+
+// ==========================================
+// FILTROS, PLANILHA E LOGIN (Já existiam)
 // ==========================================
 function filtrarCartoes() {
     const elementoNome = document.getElementById('filtro-nome');
-    if (!elementoNome) return; // Proteção extra caso o HTML não esteja carregado
+    if (!elementoNome) return; 
     
-    const termoTexto = elementoNome.value
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-        
+    const termoTexto = elementoNome.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const termoData = document.getElementById('filtro-data').value; 
     const cartoes = document.querySelectorAll('.card');
     
@@ -168,17 +262,11 @@ function filtrarCartoes() {
         let mostraPorTexto = termoTexto === '' || textoBusca.includes(termoTexto);
         let mostraPorData = termoData === '' || dataRetiradaCartao === termoData;
         
-        if (mostraPorTexto && mostraPorData) {
-            cartao.style.display = 'flex';
-        } else {
-            cartao.style.display = 'none';
-        }
+        if (mostraPorTexto && mostraPorData) cartao.style.display = 'flex';
+        else cartao.style.display = 'none';
     });
 }
 
-// ==========================================
-// FUNÇÕES DE COMANDO PARA O GOOGLE SHEETS
-// ==========================================
 async function enviarParaPlanilha(id, valorPago, falta, status) {
     const container = document.getElementById('painel-container');
     container.innerHTML = '<div class="status-msg">Atualizando banco de dados... ⏳</div>';
@@ -208,28 +296,14 @@ function adicionarPagamento(id, valorTotal, valorJaPago) {
     enviarParaPlanilha(id, totalPago, faltaFinal, status);
 }
 
-function marcarPago(id, valorTotal) {
-    if(confirm('Confirmar quitação total desta festa?')) enviarParaPlanilha(id, valorTotal, 0, 'Pago');
-}
+function marcarPago(id, valorTotal) { if(confirm('Confirmar quitação total desta festa?')) enviarParaPlanilha(id, valorTotal, 0, 'Pago'); }
+function marcarConcluido(id) { if(confirm('Deseja marcar esta festa como concluída (itens devolvidos)?')) enviarParaPlanilha(id, null, null, 'Concluido'); }
+function resetarPagamento(id, valorTotal) { if(confirm('⚠️ ATENÇÃO: Tem certeza que deseja ZERAR os pagamentos desta festa?')) enviarParaPlanilha(id, 0, valorTotal, 'Pendente'); }
 
-function marcarConcluido(id) {
-    if(confirm('Deseja marcar esta festa como concluída (itens devolvidos)?')) enviarParaPlanilha(id, null, null, 'Concluido');
-}
-
-function resetarPagamento(id, valorTotal) {
-    if(confirm('⚠️ ATENÇÃO: Tem certeza que deseja ZERAR os pagamentos desta festa?')) enviarParaPlanilha(id, 0, valorTotal, 'Pendente');
-}
-
-// ==========================================
-// SISTEMA DE SEGURANÇA (LOGIN SIMPLES)
-// ==========================================
-const SENHA_ACESSO = 'luana123'; // 🔑 
-
+const SENHA_ACESSO = 'profix123';
 function verificarSenha() {
     const senhaDigitada = document.getElementById('senha-input').value;
-    
     if (senhaDigitada === SENHA_ACESSO) {
-        // Salva na memória do celular/PC que a pessoa tem acesso
         localStorage.setItem('auth_profix', 'liberado');
         abrirPainel();
     } else {
@@ -237,28 +311,19 @@ function verificarSenha() {
         document.getElementById('senha-input').value = '';
     }
 }
-
 function abrirPainel() {
     document.getElementById('tela-login').style.display = 'none';
     document.getElementById('painel-principal').style.display = 'block';
-    carregarDados(); // Só puxa os dados do Google DEPOIS que acertar a senha
+    carregarDados(); 
 }
-
 function sairPainel() {
     if(confirm('Deseja realmente sair e bloquear o painel?')) {
-        localStorage.removeItem('auth_profix'); // Apaga a memória
-        location.reload(); // Recarrega a página para trancar
+        localStorage.removeItem('auth_profix'); 
+        location.reload(); 
     }
 }
-
-// Quando a página abre, verifica se o celular já estava liberado antes
 function iniciarSistema() {
-    if (localStorage.getItem('auth_profix') === 'liberado') {
-        abrirPainel();
-    } else {
-        // Deixa a tela de login aparecendo (estado padrão do CSS)
-    }
+    if (localStorage.getItem('auth_profix') === 'liberado') abrirPainel();
 }
 
-// Dá a partida no sistema inteiro
 iniciarSistema();
