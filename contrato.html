@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termos de Locação - Pegue e Monte</title>
+    <title>Termos de Locação - DecoraFest</title>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,7 +13,7 @@
         
         <div class="contrato-header">
             <h1>Termos de Uso e Contrato de Locação</h1>
-            <p>Sistema Pegue e Monte - Leia atentamente as condições antes de finalizar sua reserva.</p>
+            <p>Sistema DecoraFest - Leia atentamente as condições antes de finalizar sua reserva.</p>
         </div>
 
         <div class="clausula">
@@ -58,22 +58,126 @@
         <div class="clausula">
             <h2>📅 3. Cancelamentos e Alterações</h2>
             <ul>
-                <li>Caso o cliente precise mudar ou cancelar a data da festa, <strong>o valor da entrada não será devolvido</strong>.</li>
+                <li>Caso o cliente precise mudar ou cancelar a data da festa, <strong>o valor do sinal (entrada) não será devolvido</strong>.</li>
                 <li>O cliente pode agendar outra data conforme a agenda da empresa.</li>
             </ul>
         </div>
 
-        <div class="clausula">
-            <h2>✍️ 4. Aceitação dos Termos</h2>
-            <p>Ao marcar a caixa de "Li e aceito os Termos de Uso" e assinar eletronicamente o formulário de reserva, o locatário atesta que leu, compreendeu e concorda plenamente com todas as regras e taxas estipuladas neste documento.</p>
-        </div>
+        <div class="formulario-reserva-container">
+            <h2>Formulário de Reserva Oficial</h2>
+            <p>Preencha os dados abaixo para gerar o seu contrato eletrônico.</p>
+            
+            <form id="form-reserva">
+                <div class="form-group">
+                    <label for="form-nome">Nome Completo:</label>
+                    <input type="text" id="form-nome" required>
+                </div>
 
-        <!-- 🟢BOTÃO DE RESERVA 🟢 -->
-        <div class="contrato-footer">
-            <a href="https://form.jotform.com/261536272976063" class="btn-reserva">📝 Ir para o Formulário de Reserva</a>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="form-cpf">CPF:</label>
+                        <input type="text" id="form-cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="form-telefone">WhatsApp de Contato:</label>
+                        <input type="tel" id="form-telefone" placeholder="(19) 99999-9999" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="form-endereco">Endereço Completo (Apenas para cadastro, a retirada é feita pelo cliente):</label>
+                    <input type="text" id="form-endereco" required>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="form-tema">Tema Escolhido:</label>
+                        <select id="form-tema" required>
+                            <option value="">Selecione o tema...</option>
+                            <option value="Jardim Encantado">Jardim Encantado</option>
+                            <option value="Frozen">Frozen</option>
+                            <option value="Bobbie Goods">Bobbie Goods</option>
+                            <option value="Dinossauro">Dinossauro</option>
+                            <option value="Minecraft">Minecraft</option>
+                            <option value="Casa da Gabby">Casa da Gabby</option>
+                            <option value="Astronauta">Astronauta</option>
+                            <option value="Roblox">Roblox</option>
+                            <option value="Arraial">Arraial</option>
+                            <option value="Hot Wheels">Hot Wheels</option>
+                            <option value="Stitch">Stitch</option>
+                            <option value="Minnie">Minnie</option>
+                            <option value="Safári">Safári</option>
+                            <option value="Chá Revelação (Mod. 2)">Chá Revelação (Mod. 2)</option>
+                            <option value="Chá Revelação (Mod. 1)">Chá Revelação (Mod. 1)</option>
+                            <option value="Boteco">Boteco</option>
+                            <option value="Homem-Aranha">Homem-Aranha</option>
+                            <option value="Patrulha Canina">Patrulha Canina</option>
+                            <option value="Neon">Neon</option>
+                            <option value="Gamer">Gamer</option>
+                            <option value="Super Mario">Super Mario</option>
+                            <option value="Sonic">Sonic</option>
+                            <option value="Futebol">Futebol</option>
+                            <option value="Galinha Pintadinha">Galinha Pintadinha</option>
+                            <option value="Bolofofos">Bolofofos</option>
+                            <option value="Lilo e Stitch">Lilo e Stitch</option>
+                            <option value="Pool Party">Pool Party</option>
+                            <option value="Tardezinha">Tardezinha</option>
+                            <option value="Lilás">Lilás</option>
+                            <option value="Outros">Outros (Digitar)</option>
+                        </select>
+                        <input type="text" id="form-tema-outro" class="campo-oculto" placeholder="Digite o nome do tema" style="margin-top: 8px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="form-pacote">Pacote:</label>
+                        <select id="form-pacote" required>
+                            <option value="">Selecione...</option>
+                            <option value="Básico">Básico</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="form-data-festa">Data/Hora da Festa:</label>
+                        <input type="datetime-local" id="form-data-festa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="form-data-retirada">Data da Retirada:</label>
+                        <input type="date" id="form-data-retirada" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="form-data-devolucao">Data da Devolução:</label>
+                        <input type="date" id="form-data-devolucao" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="form-valor-total">Valor Total Combinado (R$):</label>
+                    <select id="form-valor-total" required>
+                        <option value="">Selecione o valor...</option>
+                        <option value="99.00">R$ 99,00 (Básico padrão)</option>
+                        <option value="129.00">R$ 129,00 (Standard padrão)</option>
+                        <option value="149.00">R$ 149,00 (Premium padrão)</option>
+                        <option value="Outros">Outro valor (Digitar)</option>
+                    </select>
+                    <input type="number" id="form-valor-outro" step="0.01" class="campo-oculto" placeholder="Ex: 110,00" style="margin-top: 8px;">
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    ${imgAssinaturaHTML}
+                <div style="border-top: 1px solid #000; width: 60%; margin: 0 auto; padding-top: 5px;">
+                    <strong>Assinatura Eletrônica do Locatário</strong>
+                </div>
+
+                <button type="submit" id="btn-enviar-reserva">Finalizar Reserva e Aceitar Contrato</button>
+            </form>
         </div>
 
     </div>
 
+    <script src="formulario.js"></script>
 </body>
 </html>

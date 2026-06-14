@@ -1011,3 +1011,184 @@ body.admin-body .bolinha-evento {
     background-color: var(--cor-roxo-medio); 
     border-radius: 50%;
 }
+/* ==========================================
+   GERADOR DE PDF (MODO DE IMPRESSÃO)
+   ========================================== */
+#area-impressao {
+    display: none; /* Fica escondido enquanto você usa o painel normalmente */
+}
+
+/* Quando o comando de gerar PDF for acionado, estas regras entram em ação: */
+@media print {
+    /* 1. Esconde todo o painel, cabeçalho, botões e barra de busca */
+    body.admin-body > header,
+    body.admin-body > .container {
+        display: none !important;
+    }
+
+    /* 2. Mostra e formata apenas o documento oficial */
+    body.admin-body {
+        background-color: white;
+        padding: 0;
+        margin: 0;
+    }
+
+    body.admin-body #area-impressao {
+        display: block !important;
+        padding: 20mm;
+        color: black;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Estética do Documento */
+    .pdf-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 30px; }
+    .pdf-header h1 { margin: 0; font-size: 22px; color: black; }
+    .pdf-header p { margin: 5px 0 0 0; font-size: 12px; color: #555; }
+    
+    .pdf-secao { margin-bottom: 25px; }
+    .pdf-secao h3 { background-color: #f0f0f0; padding: 5px 10px; margin-bottom: 10px; font-size: 14px; border: 1px solid #ccc; }
+    .pdf-linha { margin-bottom: 8px; font-size: 14px; display: flex; }
+    .pdf-linha strong { min-width: 130px; display: inline-block; }
+    
+    .pdf-assinatura { margin-top: 60px; text-align: center; page-break-inside: avoid; }
+    .pdf-assinatura img { max-width: 250px; max-height: 120px; }
+    .pdf-assinatura .linha-ass { border-top: 1px solid black; width: 300px; margin: 10px auto 5px auto; }
+}
+
+/* ==========================================
+   ESTILOS DO FORMULÁRIO DE CAPTURA NATIVO
+   ========================================== */
+body.pagina-contrato .formulario-reserva-container {
+    margin-top: 50px;
+    padding-top: 40px;
+    border-top: 3px dashed var(--cor-rosa-claro);
+}
+
+body.pagina-contrato .formulario-reserva-container h2 {
+    color: var(--cor-roxo-medio);
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+body.pagina-contrato .formulario-reserva-container p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+}
+
+body.pagina-contrato .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+body.pagina-contrato .form-group-row {
+    display: flex;
+    gap: 15px;
+}
+
+body.pagina-contrato label {
+    font-weight: 600;
+    color: var(--cor-texto-escuro);
+    font-size: 0.95rem;
+}
+
+body.pagina-contrato input,
+body.pagina-contrato select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    background-color: var(--cor-fundo-offwhite);
+    color: var(--cor-texto-escuro);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.pagina-contrato input:focus,
+body.pagina-contrato select:focus {
+    outline: none;
+    border-color: var(--cor-roxo-medio);
+    background-color: white;
+}
+
+/* ÁREA DA ASSINATURA (CANVAS) */
+body.pagina-contrato .assinatura-block {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+body.pagina-contrato .canvas-wrapper {
+    background-color: #f9f9f9;
+    border: 2px dashed #bbb;
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    height: 180px;
+    cursor: crosshair;
+    touch-action: none; /* Impede que a tela do celular role enquanto assina */
+}
+
+body.pagina-contrato canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+body.pagina-contrato #btn-limpar-assinatura {
+    background: none;
+    border: 1px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+body.pagina-contrato #btn-limpar-assinatura:hover {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+body.pagina-contrato #btn-enviar-reserva {
+    width: 100%;
+    background-color: var(--cor-roxo-medio);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(177, 137, 217, 0.4);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+body.pagina-contrato #btn-enviar-reserva:hover {
+    background-color: var(--cor-lilas-claro);
+}
+
+body.pagina-contrato #btn-enviar-reserva:active {
+    transform: scale(0.99);
+}
+
+/* Telas menores (Celular) */
+@media (max-width: 600px) {
+    body.pagina-contrato .form-group-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* Esconde os campos de texto "Outros" até que sejam selecionados no dropdown */
+body.pagina-contrato .campo-oculto {
+    display: none;
+}
