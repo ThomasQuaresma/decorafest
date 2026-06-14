@@ -166,10 +166,19 @@
                     <input type="number" id="form-valor-outro" step="0.01" class="campo-oculto" placeholder="Ex: 110,00" style="margin-top: 8px;">
                 </div>
 
-                <div style="text-align: center; margin-top: 40px;">
-                    ${imgAssinaturaHTML}
-                <div style="border-top: 1px solid #000; width: 60%; margin: 0 auto; padding-top: 5px;">
-                    <strong>Assinatura Eletrônica do Locatário</strong>
+                <div class="form-group" style="margin-top: 20px; padding: 15px; background-color: #f9f4fa; border-left: 4px solid #8a2be2; border-radius: 4px;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal; margin: 0;">
+                        <input type="checkbox" id="form-aceite" required style="width: 22px; height: 22px; margin-right: 12px; cursor: pointer;">
+                        <span>Declaro que li as informações da página e <strong>aceito todos os termos e condições</strong> do contrato de locação descritos acima.</span>
+                    </label>
+                </div>
+                
+                <div class="assinatura-block">
+                    <label>Assinatura Digital (Assine com o dedo no espaço abaixo):</label>
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas-assinatura"></canvas>
+                    </div>
+                    <button type="button" id="btn-limpar-assinatura">Clear / Limpar Espaço</button>
                 </div>
 
                 <button type="submit" id="btn-enviar-reserva">Finalizar Reserva e Aceitar Contrato</button>
