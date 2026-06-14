@@ -373,45 +373,120 @@ function iniciarSistema() {
     if (localStorage.getItem('auth_decorafest') === 'liberado') abrirPainel();
 }
 // ==========================================
-// GERAÇÃO DE PDF AUTOMÁTICA + WHATSAPP
+// GERAÇÃO DE PDF (2 PÁGINAS) AUTOMÁTICO
 // ==========================================
 function gerarPDF(idDaReserva) {
     const reserva = dadosGlobais.find(item => item['Submission ID'] == String(idDaReserva));
     if (!reserva) { alert("Erro: Dados não encontrados."); return; }
 
     const nomeCompleto = (reserva['Nome - Primeiro Nome'] + ' ' + (reserva['Nome - Ultimo Nome'] || '')).trim();
+    const cpf = reserva['CPF'] || 'Não informado';
+    const endereco = reserva['Endereço'] || 'Não informado';
+    const telefone = reserva['Whatsapp'] || reserva['Número de Telefone'] || 'Não informado';
+    const tema = reserva['Tema'] || 'Não informado';
+    const pacote = reserva['Tipo do Tema'] || 'Não informado';
     
-    // Monta o mesmo HTML de antes (que já estava bom)
+    const dataFesta = reserva['Data e Hora do Evento'] ? new Date(reserva['Data e Hora do Evento']).toLocaleDateString('pt-BR') : 'Não definida';
+    const dataRetirada = reserva['Data da Retirada'] ? new Date(reserva['Data da Retirada']).toLocaleDateString('pt-BR') : 'Não definida';
+    const dataEntrega = reserva['Data da Entrega'] ? new Date(reserva['Data da Entrega']).toLocaleDateString('pt-BR') : 'Não definida';
+    
+    const valorTotal = extrairNumero(reserva['Valor Total']).toFixed(2).replace('.', ',');
+    const valorPago = extrairNumero(reserva['Valor Pago']).toFixed(2).replace('.', ',');
+    const valorFalta = (extrairNumero(reserva['Valor Total']) - extrairNumero(reserva['Valor Pago'])).toFixed(2).replace('.', ',');
+
+    // 1. Prepara a imagem da assinatura com o servidor liberado do Google (lh3)
+    let imgAssinaturaHTML = '<br><br><br>';
+    let linkAssinatura = reserva['Assinatura'] || '';
+    if (linkAssinatura.includes('drive.google.com')) {
+        const match = linkAssinatura.match(/[-\w]{25,}/); 
+        if (match) {
+            // O servidor lh3.googleusercontent.com burla o bloqueio de segurança do PDF
+            imgAssinaturaHTML = `<img src="https://lh3.googleusercontent.com/d/${match[0]}" crossorigin="anonymous" style="max-height: 90px; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;" alt="Assinatura">`;
+        }
+    }
+
+    // 2. Monta o Documento HTML com 2 Páginas
     const elementoContrato = document.createElement('div');
+    elementoContrato.style.fontFamily = 'Arial, sans-serif';
+    elementoContrato.style.color = '#333';
+    elementoContrato.style.lineHeight = '1.6';
+    elementoContrato.style.padding = '20px';
+
     elementoContrato.innerHTML = `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h1>Ordem de Serviço: ${nomeCompleto}</h1>
-            <p><strong>Tema:</strong> ${reserva['Tema'] || ''}</p>
-            <p><strong>Total:</strong> R$ ${extrairNumero(reserva['Valor Total']).toFixed(2).replace('.', ',')}</p>
-            <!-- (Cole o restante do seu HTML aqui dentro) -->
+        <!-- ================= PÁGINA 1: O CONTRATO ================= -->
+        <div>
+            <h1 style="text-align: center; color: #8a2be2;">Contrato de Locação - DecoraFest</h1>
+            <hr style="border: 1px solid #eee; margin-bottom: 20px;">
+            
+            <p style="text-align: justify;">
+                Pelo presente instrumento, a <strong>DecoraFest</strong> e o(a) locatário(a) <strong>${nomeCompleto}</strong>, portador(a) do CPF <strong>${cpf}</strong>, têm entre si justo e contratado a locação de artigos para decoração de festas, mediante as seguintes cláusulas e condições:
+            </p>
+            
+            <ul style="text-align: justify; margin-top: 20px; padding-left: 20px;">
+                <li style="margin-bottom: 10px;">O locatário declara estar ciente de que o material deve ser devolvido nas exatas mesmas condições em que foi entregue.</li>
+                <li style="margin-bottom: 10px;">Em caso de danos, quebras, manchas irreversíveis ou perda de peças, será cobrado o valor integral de reposição do item de acordo com o preço de mercado vigente.</li>
+                <li style="margin-bottom: 10px;">O material de locação deve retornar limpo. Caso os itens retornem sujos, será cobrada uma taxa de limpeza no valor de R$ 15,00.</li>
+                <li style="margin-bottom: 10px;">Em caso de cancelamento da reserva por parte do locatário, o valor do sinal pago antecipadamente não será reembolsado, cobrindo os custos de bloqueio de agenda.</li>
+            </ul>
+
+            <p style="text-align: justify; margin-top: 30px;">
+                Por estarem de pleno acordo com as regras estabelecidas, o locatário assina digitalmente este termo de responsabilidade no ato da reserva pelo site.
+            </p>
+
+            <div style="text-align: center; margin-top: 80px;">
+                ${imgAssinaturaHTML}
+                <div style="border-top: 1px solid #000; width: 70%; margin: 0 auto; padding-top: 5px;">
+                    <strong>Assinatura Eletrônica do Locatário</strong><br>
+                    <span style="font-size: 11px; color: #666;">${nomeCompleto} - CPF: ${cpf}</span><br>
+                    <span style="font-size: 10px; color: #999;">Assinado no momento da reserva online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= QUEBRA DE PÁGINA ================= -->
+        <div style="page-break-before: always; margin-top: 40px;"></div>
+
+        <!-- ================= PÁGINA 2: A ORDEM DE SERVIÇO ================= -->
+        <div>
+            <h1 style="color: #8a2be2; border-bottom: 2px solid #8a2be2; padding-bottom: 10px;">Ordem de Serviço e Detalhes da Locação</h1>
+
+            <h3 style="margin-top: 25px; color: #444;">👤 Dados do Contratante</h3>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #8a2be2;">
+                <p style="margin: 5px 0;"><strong>Nome:</strong> ${nomeCompleto}</p>
+                <p style="margin: 5px 0;"><strong>Endereço:</strong> ${endereco}</p>
+                <p style="margin: 5px 0;"><strong>Telefone/WhatsApp:</strong> ${telefone}</p>
+            </div>
+
+            <h3 style="margin-top: 25px; color: #444;">🎈 Detalhes do Evento</h3>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #8a2be2;">
+                <p style="margin: 5px 0;"><strong>Tema Selecionado:</strong> ${tema}</p>
+                <p style="margin: 5px 0;"><strong>Pacote Escolhido:</strong> ${pacote}</p>
+                <p style="margin: 5px 0;"><strong>Data e Hora da Festa:</strong> ${dataFesta}</p>
+                <p style="margin: 5px 0;"><strong>Data da Retirada:</strong> ${dataRetirada}</p>
+                <p style="margin: 5px 0;"><strong>Data da Devolução:</strong> ${dataEntrega}</p>
+            </div>
+
+            <h3 style="margin-top: 25px; color: #444;">💰 Resumo Financeiro</h3>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #8a2be2;">
+                <p style="margin: 5px 0; font-size: 16px;"><strong>Valor Total Combinado:</strong> R$ ${valorTotal}</p>
+                <p style="margin: 5px 0; font-size: 16px; color: #28a745;"><strong>Sinal Pago Antecipado:</strong> R$ ${valorPago}</p>
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">
+                <p style="margin: 5px 0; font-size: 18px; color: #d9534f;"><strong>Resta a Pagar:</strong> R$ ${valorFalta}</p>
+            </div>
         </div>
     `;
 
-    // Configuração do PDF
+    // 3. Configuração do html2pdf com o novo nome de arquivo
+    const nomeArquivoLimpo = nomeCompleto.replace(/\s+/g, '_'); // Troca espaços por underline
     const opt = {
         margin:       10,
-        filename:     `Contrato_${nomeCompleto.replace(/\s+/g, '_')}.pdf`,
+        filename:     `Contrato_${nomeArquivoLimpo}_DecoraFest.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
+        html2canvas:  { scale: 2, useCORS: true }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // 1. Gera e BAIXA o arquivo automaticamente
-    html2pdf().set(opt).from(elementoContrato).save().then(() => {
-        
-        // 2. Após o download iniciar, abre o WhatsApp
-        let zapLimpo = String(reserva['Whatsapp'] || '').replace(/\D/g, '');
-        if (zapLimpo.length === 10 || zapLimpo.length === 11) zapLimpo = '55' + zapLimpo;
-        
-        const msgTexto = encodeURIComponent(`Olá, segue o seu contrato em PDF!`);
-        if (zapLimpo.length >= 10) {
-            window.open(`https://wa.me/${zapLimpo}?text=${msgTexto}`, '_blank');
-        }
-    });
+    // 4. Gera o arquivo e baixa automaticamente
+    html2pdf().set(opt).from(elementoContrato).save();
 }
 iniciarSistema();
